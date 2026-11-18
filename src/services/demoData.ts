@@ -26,7 +26,12 @@ const LOCATIONS = {
 } as const
 
 // Deterministic demo photos (sofa/farm animal CDN — stable, keyless)
-const photo = (seed: number) => `https://placekitten.com/640/480?image=${seed}`
+// placekitten is offline (521). Dogs use placedog; other animals use picsum
+// with a stable seed so each report always shows the same photo.
+const photo = (seed: number, animal: AnimalType) =>
+  animal === 'dog'
+    ? `https://placedog.net/640/480?id=${seed}`
+    : `https://picsum.photos/seed/petalert${seed}/640/480`
 
 interface DemoSpec {
   found?: 'found' | 'spotted'
@@ -93,7 +98,7 @@ export function buildDemoReports(): PetReport[] {
       age_estimate: spec.age,
       color: spec.color,
       size: spec.size,
-      photos: [photo(spec.photoSeed)],
+      photos: [photo(spec.photoSeed, spec.animal_type)],
       distinctive_features: spec.features,
       description: spec.description,
       latitude: loc.lat,
@@ -187,7 +192,10 @@ export async function seedDemoData(store: DemoSeedStore): Promise<{ reports: num
   if (!(await store.getProfile(profile.id))) { await store.putProfile(profile); inserted++ }
   let reports = 0
   for (const r of buildDemoReports()) {
-    if (!(await store.getReport(r.id))) { await store.putReport(r); reports++ }
+    const existing = await store.getReport(r.id)
+    if (!existing) { await store.putReport(r); reports++; continue }
+    // refresh photo URLs if the image host changed (placekitten → picsum)
+    if (existing.photos[0] !== r.photos[0]) await store.putReport({ ...existing, photos: r.photos })
   }
   let sightings = 0
   for (const s of buildDemoSightings()) {
