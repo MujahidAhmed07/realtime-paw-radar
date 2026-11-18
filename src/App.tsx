@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './store/auth'
 import { AppProvider } from './store/app'
 import { ToastProvider } from './components/ui/Toast'
@@ -24,13 +24,14 @@ import { AdminOverviewPage, AdminUsersPage, AdminReportsPage, AdminModerationPag
 export function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.VITE_BASE_PATH ? import.meta.env.VITE_BASE_PATH.replace(/\/$/, '') : undefined}>
       <AuthProvider>
         <AppProvider>
           <ToastProvider>
             <Routes>
               <Route element={<Layout />}>
-                <Route path="/" element={<HomePage />} />
+                <Route path="/" element={<Navigate to="/home" replace />} />
+                <Route path="/home" element={<HomePage />} />
                 <Route path="/map" element={<LiveMapPage />} />
                 <Route path="/missing" element={<ReportListPage kind="missing" />} />
                 <Route path="/found" element={<ReportListPage kind="found" />} />

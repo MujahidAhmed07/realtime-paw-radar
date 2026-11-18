@@ -107,7 +107,14 @@ npm run build        # type-checks + bundles to dist/
 npm run preview      # serve the production build locally
 ```
 
-Deploy `dist/` to any static host (Vercel, Netlify, Cloudflare Pages) and set the env vars above. The Supabase project handles the backend.
+**GitHub Pages (configured):** pushes to `main` auto-build and deploy via
+`.github/workflows/deploy-pages.yml` to
+https://mujahidahmed07.github.io/realtime-paw-radar — the app entry is `/home`
+(the site requires Pages Source = "GitHub Actions"). The router basename is
+derived from `VITE_BASE_PATH` so deep links work.
+
+For other hosts (Vercel, Netlify, Cloudflare Pages), deploy `dist/` with no
+`VITE_BASE_PATH`. The Supabase project handles the production backend.
 
 ## 🔒 Security Notes
 
