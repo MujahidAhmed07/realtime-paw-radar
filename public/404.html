@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>PetAlert</title>
+    <script>
+      // GitHub Pages SPA fallback: convert the 404 path into a query param
+      // that index.html converts back on load.
+      (function () {
+        var l = window.location
+        var path = l.pathname.replace(/^\/realtime-paw-radar\/?/, '')
+        l.replace(l.origin + '/realtime-paw-radar/?path=/' + path + l.search)
+      })()
+    </script>
+  </head>
+  <body></body>
+</html>
