@@ -13,14 +13,18 @@
   <body>
     <div id="root"></div>
     <script>
-      // Restore deep links arriving via the GitHub Pages 404 fallback
+      // Restore deep links arriving via the GitHub Pages 404 fallback.
+      // %BASE_URL% is replaced by Vite with the configured base path, so the
+      // restored URL keeps the repo prefix on GitHub Pages project sites.
       (function () {
         var params = new URLSearchParams(window.location.search)
         var p = params.get('path')
         if (p && p !== '/') {
           params.delete('path')
           var rest = params.toString()
-          window.history.replaceState(null, '', p + (rest ? '?' + rest : ''))
+          var base = '%BASE_URL%' // '/' or '/<repo>/'
+          var path = base.replace(/\/$/, '') + p
+          window.history.replaceState(null, '', path + (rest ? '?' + rest : ''))
         }
       })()
     </script>
