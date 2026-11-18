@@ -1,4 +1,5 @@
 import { openDB, type IDBPDatabase } from 'idb'
+import { seedDemoData } from '../demoData'
 import type {
   DataProvider, Session, Profile, NotificationPreferences, PetReport, PetSighting,
   Notification, Conversation, Message, SavedReport, ReportFlag, Stats, UserRole,
@@ -240,6 +241,17 @@ export class LocalProvider implements DataProvider {
     return updated
   }
   async ensureAdminUser() {
+    // Idempotent demo seed — fixed demo-* IDs, never touches real records
+    try {
+      await seedDemoData({
+        getReport: (id) => get<PetReport>('reports', id),
+        putReport: (r) => put('reports', r),
+        getSighting: (id) => get<PetSighting>('sightings', id),
+        putSighting: (x) => put('sightings', x),
+        getProfile: (id) => get<Profile>('profiles', id),
+        putProfile: (p) => put('profiles', p)
+      })
+    } catch (err) { console.warn('Demo seed skipped', err) }
     const users = await getAll<LocalUser>('users')
     const profiles = await getAll<Profile>('profiles')
     const admin = profiles.find(p => p.role === 'admin')
@@ -305,6 +317,7 @@ export class LocalProvider implements DataProvider {
 
   private async _fanoutNearby(report: PetReport) {
     if (report.status !== 'active') return
+    if (report.is_demo) return // demo records never trigger real alerts
     const profiles = await getAll<Profile>('profiles')
     const topic = report.kind === 'missing' ? 'nearby_missing_enabled' : 'nearby_found_enabled'
     for (const p of profiles) {

@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { PawPrint, FilePlus2, MapPin, Bell, MessageCircle, Heart, Eye, CheckCircle2 } from 'lucide-react'
+import { PawPrint, FilePlus2, MapPin, Bell, MessageCircle, Heart, Eye, CheckCircle2, UserRound, Sparkles, Info } from 'lucide-react'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import { dataProvider } from '../../services/providers'
 import { useAuth } from '../../store/auth'
 import type { PetReport } from '../../types'
@@ -11,6 +14,109 @@ import { Dialog } from '../../components/ui/Dialog'
 import { SightingForm } from '../../components/pets/SightingForm'
 
 export function DashboardPage() {
+  const { isGuest } = useAuth()
+  if (isGuest) return <GuestDashboard />
+  return <UserDashboard />
+}
+
+function pinIcon(kind: string) {
+  return L.divIcon({ className: 'pet-marker', html: `<div class="pet-marker-pin ${kind === 'missing' ? 'pet-marker-missing' : 'pet-marker-found'}"><span>🐾</span></div>`, iconSize: [40, 40], iconAnchor: [20, 40] })
+}
+
+/** Guest view — extends the dashboard concept without duplicating the user dashboard. */
+function GuestDashboard() {
+  const [stats, setStats] = useState({ missing: 0, found: 0, reunited: 0 })
+  const [recent, setRecent] = useState<PetReport[]>([])
+
+  useEffect(() => {
+    Promise.all([
+      dataProvider.listReports({ kind: 'missing', status: 'active' }),
+      dataProvider.listReports({ kind: 'found', status: 'active' }),
+      dataProvider.listReports({ status: 'reunited' }),
+      dataProvider.listReports({ status: 'active', limit: 6 })
+    ]).then(([missing, found, reunited, recentReports]) => {
+      setStats({ missing: missing.length, found: found.length, reunited: reunited.length })
+      setRecent(recentReports)
+    }).catch(console.error)
+  }, [])
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1>Welcome to PetAlert <span className="inline-flex items-center gap-1 rounded-full bg-accent-50 px-2.5 py-0.5 align-middle text-xs font-semibold text-accent-700 dark:bg-accent-700/30 dark:text-accent-100"><UserRound className="h-3 w-3" /> Guest Mode</span></h1>
+        <p className="mt-1 text-muted-foreground">Explore missing and found pets around you — no account needed to browse.</p>
+      </div>
+
+      {/* Guest banner */}
+      <div className="rounded-2xl border border-accent-500/30 bg-accent-50 p-5 dark:bg-accent-700/15">
+        <p className="flex items-start gap-2 text-sm text-accent-700 dark:text-accent-100">
+          <Info className="mt-0.5 h-4 w-4 shrink-0" />
+          You're exploring PetAlert as a guest. Create a free account to report missing pets, submit sightings, and help reunite pets with their families.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link to="/register" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-white hover:bg-secondary-700"><Sparkles className="h-4 w-4" /> Create Free Account</Link>
+          <Link to="/how-it-works" className="inline-flex items-center gap-2 rounded-lg border border-input px-4 py-2 text-sm font-semibold hover:bg-muted dark:hover:bg-dark-card">How PetAlert works</Link>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="card-surface p-5"><p className="text-3xl font-bold text-destructive-600">{stats.missing}</p><p className="text-sm text-muted-foreground">Active missing reports</p></div>
+        <div className="card-surface p-5"><p className="text-3xl font-bold text-success-600">{stats.found}</p><p className="text-sm text-muted-foreground">Active found reports</p></div>
+        <div className="card-surface p-5"><p className="text-3xl font-bold text-primary">{stats.reunited}</p><p className="text-sm text-muted-foreground">Pets reunited</p></div>
+      </div>
+
+      {/* Live map preview */}
+      <section>
+        <h2 className="mb-3 text-lg font-semibold">Live pet map</h2>
+        <div className="card-surface overflow-hidden">
+          <MapContainer center={[3.139, 101.6869]} zoom={11} className="h-80 w-full" scrollWheelZoom>
+            <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {recent.filter(r => !r.is_demo).slice(0, 50).map(r => (
+              <Marker key={r.id} position={[r.latitude, r.longitude]} icon={pinIcon(r.kind)}>
+                <Popup><Link to={`/pet/${r.id}`} className="font-semibold text-secondary">{r.pet_name ?? r.report_code}</Link></Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+        </div>
+      </section>
+
+      {/* Recent reports */}
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Recently reported pets</h2>
+          <Link to="/missing" className="text-sm font-semibold text-secondary hover:underline">View all missing →</Link>
+        </div>
+        {recent.length === 0 ? (
+          <EmptyState icon={<PawPrint className="h-10 w-10" />} title="No active reports yet" description="Check back soon." />
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {recent.map(r => <PetCard key={r.id} report={r} />)}
+          </div>
+        )}
+      </section>
+
+      {/* How it works */}
+      <section className="card-surface p-6">
+        <h2 className="text-lg font-semibold">How PetAlert works</h2>
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          {[
+            ['1. Report', 'Owners publish missing pets with photos and last-seen location.'],
+            ['2. Alert', 'Neighbors within the alert radius are notified in real time.'],
+            ['3. Reunite', 'Finders submit sightings and chat with the owner privately.']
+          ].map(([t, d]) => (
+            <div key={t} className="rounded-xl bg-muted p-4 dark:bg-dark-bg">
+              <p className="font-semibold">{t}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function UserDashboard() {
   const { session } = useAuth()
   const [myReports, setMyReports] = useState<PetReport[]>([])
   const [sightingsCount, setSightingsCount] = useState(0)

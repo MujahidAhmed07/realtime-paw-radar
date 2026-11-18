@@ -34,3 +34,23 @@
 - Local backend: same-browser realtime only (BroadcastChannel); cross-device requires Supabase.
 - Local backend: passwords hashed with SHA-256+salt — acceptable for dev only; production uses Supabase Auth.
 - AI matching uses a feature-overlap heuristic locally; CLIP/pgvector arrives with the FastAPI service.
+
+
+## Guest Mode & Demo Data update (tested in-browser)
+
+| Test | Result |
+|---|---|
+| Continue as Guest on login & register pages | ✅ |
+| Unique guest session per visitor (sessionStorage, 12h expiry) | ✅ |
+| Guest Mode badge in navigation + toast on entry | ✅ |
+| Guest dashboard: welcome, banner, stats, map, demo reports, how-it-works | ✅ |
+| Guest browses Missing/Found lists incl. DEMO-labeled records | ✅ (20 DEMO badges) |
+| Guest opens demo report detail (DEMO label, sighting visible) | ✅ |
+| Guest blocked from report forms with non-destructive gate | ✅ (stays on page) |
+| Guest exit (logout) returns to public site | ✅ |
+| Registered login still works after guest mode (regression) | ✅ |
+| User dashboard & My Reports unchanged (regression) | ✅ |
+| Regular user denied /admin (regression) | ✅ |
+| Admin panel intact, demo stats visible (regression) | ✅ |
+| Demo seed idempotent (fixed demo-* IDs) | ✅ |
+| Demo reports excluded from nearby-alert fan-out (is_demo guard) | ✅ local; guarded in SQL trigger |

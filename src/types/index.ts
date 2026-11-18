@@ -8,6 +8,7 @@ export type FoundStatus = 'found' | 'spotted'
 export type AnimalCondition = 'healthy' | 'injured' | 'scared' | 'hungry' | 'unknown'
 
 export interface Profile {
+  is_demo?: boolean
   id: string
   email: string
   full_name: string
@@ -36,6 +37,7 @@ export interface NotificationPreferences {
 }
 
 export interface PetReport {
+  is_demo?: boolean
   id: string
   report_code: string
   kind: ReportKind
@@ -67,6 +69,7 @@ export interface PetReport {
 }
 
 export interface PetSighting {
+  is_demo?: boolean
   id: string
   report_id: string
   reporter_id: string

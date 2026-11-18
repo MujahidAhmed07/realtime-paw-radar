@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { MapPin, Clock, Heart } from 'lucide-react'
 import { useState } from 'react'
 import type { PetReport } from '../../types'
-import { KindBadge, StatusBadge } from '../ui/Badge'
+import { Badge, KindBadge, StatusBadge } from '../ui/Badge'
 import { PhotoGrid } from './Photo'
 import { animalEmoji, timeAgo, formatDistance } from '../../lib/utils'
 import { dataProvider } from '../../services/providers'
@@ -28,6 +28,7 @@ export function PetCard({ report, distanceKm, onSavedChange }: { report: PetRepo
         <div className="absolute left-3 top-3 flex gap-2">
           <KindBadge kind={report.kind} />
           {report.status !== 'active' && <StatusBadge status={report.status} />}
+          {report.is_demo && <Badge variant="accent">DEMO</Badge>}
         </div>
         {session && (
           <button onClick={toggleSave} aria-label={saved ? 'Unsave report' : 'Save report'}

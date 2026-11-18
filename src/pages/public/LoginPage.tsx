@@ -3,11 +3,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { PawPrint } from 'lucide-react'
+import { PawPrint, UserRound } from 'lucide-react'
 import { dataProvider } from '../../services/providers'
 import { Button } from '../../components/ui/Button'
 import { Input, Label } from '../../components/ui'
 import { useToast } from '../../components/ui/Toast'
+import { useAuth } from '../../store/auth'
 
 const loginSchema = z.object({
   email: z.string().email('Enter a valid email address'),
@@ -18,6 +19,7 @@ type LoginForm = z.infer<typeof loginSchema>
 export function LoginPage() {
   const { push } = useToast()
   const navigate = useNavigate()
+  const { loginAsGuest } = useAuth()
   const [serverError, setServerError] = useState('')
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) })
 
@@ -53,6 +55,18 @@ export function LoginPage() {
             {errors.password && <p className="mt-1 text-xs text-destructive">{errors.password.message}</p>}
           </div>
           <Button type="submit" className="w-full" loading={isSubmitting}>Sign in</Button>
+          <div className="relative py-1 text-center">
+            <span className="relative z-10 bg-card px-2 text-xs uppercase tracking-wide text-muted-foreground dark:bg-dark-card">or</span>
+            <span className="absolute left-0 right-0 top-1/2 h-px bg-border dark:bg-dark-border" aria-hidden />
+          </div>
+          <Button
+            type="button"
+            variant="accent"
+            className="w-full"
+            onClick={() => { loginAsGuest(); push('info', 'Guest Mode', 'You can browse reports and the map. Create an account to report pets.'); navigate('/dashboard') }}
+          >
+            <UserRound className="h-4 w-4" /> Continue as Guest
+          </Button>
           <div className="flex justify-between text-sm">
             <Link to="/reset-request" className="text-secondary hover:underline">Forgot password?</Link>
             <Link to="/register" className="font-medium text-secondary hover:underline">Create an account</Link>

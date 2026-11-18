@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { PawPrint, Map, Bell, LayoutDashboard, Menu, X, LogOut, Shield, Sun, Moon, Monitor, WifiOff } from 'lucide-react'
+import { PawPrint, Map, Bell, LayoutDashboard, Menu, X, LogOut, Shield, Sun, Moon, Monitor, WifiOff, UserRound, UserPlus } from 'lucide-react'
 import { useAuth } from '../../store/auth'
 import { useApp } from '../../store/app'
 import { cn } from '../../lib/cn'
@@ -26,7 +26,7 @@ function ThemeToggle() {
 }
 
 export function Layout() {
-  const { session, profile, isAdmin, logout } = useAuth()
+  const { session, profile, isAdmin, isGuest, logout } = useAuth()
   const { unread, online } = useApp()
   const [menuOpen, setMenuOpen] = useState(false)
   const [userOpen, setUserOpen] = useState(false)
@@ -57,6 +57,11 @@ export function Layout() {
           </nav>
 
           <div className="flex items-center gap-1">
+            {isGuest && (
+              <span className="hidden items-center gap-1 rounded-full bg-accent-50 px-2.5 py-1 text-xs font-semibold text-accent-700 sm:inline-flex" title="You are browsing as a guest">
+                <UserRound className="h-3.5 w-3.5" /> Guest Mode
+              </span>
+            )}
             <ThemeToggle />
             {!online && (
               <span className="flex items-center gap-1 rounded-full bg-warning-50 px-2.5 py-1 text-xs font-semibold text-warning-700" title="You are offline">
@@ -102,10 +107,19 @@ export function Layout() {
                   )}
                 </div>
               </>
+            ) : isGuest ? (
+              <>
+                <Link to="/dashboard" className="hidden rounded-lg p-2 hover:bg-muted dark:hover:bg-dark-card sm:block" aria-label="Guest dashboard">
+                  <LayoutDashboard className="h-5 w-5" />
+                </Link>
+                <button onClick={handleLogout} className="hidden rounded-lg p-2 hover:bg-muted dark:hover:bg-dark-card sm:block" aria-label="Exit Guest Mode" title="Exit Guest Mode">
+                  <LogOut className="h-5 w-5" />
+                </button>
+              </>
             ) : (
               <div className="hidden items-center gap-2 sm:flex">
                 <Link to="/login" className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted dark:hover:bg-dark-card">Sign in</Link>
-                <Link to="/register" className="rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-white hover:bg-secondary-700">Sign up</Link>
+                <Link to="/register" className="inline-flex items-center gap-1 rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-white hover:bg-secondary-700"><UserPlus className="h-4 w-4" /> Sign up</Link>
               </div>
             )}
             <button className="rounded-lg p-2 lg:hidden" onClick={() => setMenuOpen(o => !o)} aria-label="Toggle menu">

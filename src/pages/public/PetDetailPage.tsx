@@ -10,6 +10,7 @@ import { Dialog } from '../../components/ui/Dialog'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { useToast } from '../../components/ui/Toast'
 import { useAuth } from '../../store/auth'
+import { RegistrationPrompt } from '../../components/ui/RegistrationPrompt'
 import { animalEmoji, timeAgo, formatDistance } from '../../lib/utils'
 import { getPosition } from '../../services/location'
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet'
@@ -21,8 +22,9 @@ function makePin(colorClass: string, emoji: string) {
 
 export function PetDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { session } = useAuth()
+  const { session, isGuest } = useAuth()
   const { push } = useToast()
+  const [prompt, setPrompt] = useState<string | null>(null)
   const [report, setReport] = useState<PetReport | null>(null)
   const [sightings, setSightings] = useState<PetSighting[]>([])
   const [loading, setLoading] = useState(true)
@@ -99,6 +101,7 @@ export function PetDetailPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <KindBadge kind={report.kind} />
                   <StatusBadge status={report.status} />
+                  {report.is_demo && <Badge variant="accent">DEMO — sample data, not a real emergency</Badge>}
                   {report.found_status && <Badge variant="secondary">{report.found_status}</Badge>}
                   {report.animal_condition && report.animal_condition !== 'unknown' && <Badge variant={report.animal_condition === 'injured' ? 'destructive' : 'warning'}>{report.animal_condition}</Badge>}
                 </div>
@@ -152,6 +155,11 @@ export function PetDetailPage() {
             <div className="mt-6 rounded-xl bg-muted p-4 dark:bg-dark-bg">
               {isOwner ? (
                 <Link to="/dashboard/my-reports" className="font-medium text-secondary hover:underline">You reported this — manage it from your dashboard →</Link>
+              ) : isGuest ? (
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm text-muted-foreground">Sign in required to contact the reporter or submit a sighting.</p>
+                  <Button variant="accent" onClick={() => setPrompt('Contact the reporter')}>Create Free Account</Button>
+                </div>
               ) : session ? (
                 <ContactSection report={report} />
               ) : (
@@ -208,6 +216,7 @@ export function PetDetailPage() {
         </div>
       </div>
 
+      {prompt && <RegistrationPrompt feature={prompt} onClose={() => setPrompt(null)} />}
       <Dialog open={flagOpen} onClose={() => setFlagOpen(false)} title="Flag this report">
         <p className="mb-3 text-sm text-muted-foreground">Why are you flagging this report?</p>
         <div className="space-y-2">

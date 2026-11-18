@@ -3,11 +3,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { PawPrint, CheckCircle2 } from 'lucide-react'
+import { PawPrint, CheckCircle2, UserRound } from 'lucide-react'
 import { dataProvider } from '../../services/providers'
 import { Button } from '../../components/ui/Button'
 import { Input, Label } from '../../components/ui'
 import { useToast } from '../../components/ui/Toast'
+import { useAuth } from '../../store/auth'
 
 const registerSchema = z.object({
   fullName: z.string().min(2, 'Enter your full name'),
@@ -20,6 +21,7 @@ type RegisterForm = z.infer<typeof registerSchema>
 export function RegisterPage() {
   const { push } = useToast()
   const navigate = useNavigate()
+  const { loginAsGuest } = useAuth()
   const [serverError, setServerError] = useState('')
   const [needsConfirm, setNeedsConfirm] = useState(false)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterForm>({ resolver: zodResolver(registerSchema) })
@@ -81,6 +83,18 @@ export function RegisterPage() {
             {errors.confirm && <p className="mt-1 text-xs text-destructive">{errors.confirm.message}</p>}
           </div>
           <Button type="submit" className="w-full" loading={isSubmitting}>Create account</Button>
+          <div className="relative py-1 text-center">
+            <span className="relative z-10 bg-card px-2 text-xs uppercase tracking-wide text-muted-foreground dark:bg-dark-card">or</span>
+            <span className="absolute left-0 right-0 top-1/2 h-px bg-border dark:bg-dark-border" aria-hidden />
+          </div>
+          <Button
+            type="button"
+            variant="accent"
+            className="w-full"
+            onClick={() => { loginAsGuest(); push('info', 'Guest Mode', 'You can browse reports and the map. Create an account to report pets.'); navigate('/dashboard') }}
+          >
+            <UserRound className="h-4 w-4" /> Continue as Guest
+          </Button>
           <p className="text-center text-sm text-muted-foreground">
             Already have an account? <Link to="/login" className="font-medium text-secondary hover:underline">Sign in</Link>
           </p>
