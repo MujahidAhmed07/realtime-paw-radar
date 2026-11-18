@@ -65,7 +65,7 @@ export function ReportForm({ kind }: { kind: 'missing' | 'found' }) {
   const refReportId = params.get('ref') // e.g. sighting referring to a missing report
 
   const schema = (kind === 'missing' ? lostSchema : foundSchema) as typeof lostSchema
-  const { register, handleSubmit, trigger, watch, setValue, formState: { errors, isSubmitting } } = useForm<ReportFormValues>({
+  const { register, trigger, watch, setValue, formState: { errors, isSubmitting } } = useForm<ReportFormValues>({
     resolver: zodResolver(schema) as never,
     defaultValues: loadDraft(draftKey, {
       animal_type: 'dog', gender: 'unknown', event_date: new Date().toISOString().slice(0, 10),
