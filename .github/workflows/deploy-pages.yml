@@ -24,9 +24,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Derive base path from repository name
+        id: base
+        run: echo "path=/${REPO_NAME}/" >> "$GITHUB_OUTPUT"
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
       - run: npm run build
         env:
-          VITE_BASE_PATH: /realtime-paw-radar/
+          VITE_BASE_PATH: ${{ steps.base.outputs.path }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

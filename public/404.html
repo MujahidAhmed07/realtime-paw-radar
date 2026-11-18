@@ -5,11 +5,15 @@
     <title>PetAlert</title>
     <script>
       // GitHub Pages SPA fallback: convert the 404 path into a query param
-      // that index.html converts back on load.
+      // that index.html converts back on load. Repo prefix derived from the
+      // current pathname so this works for any repo name. Unknown paths
+      // redirect to the app home.
       (function () {
         var l = window.location
-        var path = l.pathname.replace(/^\/realtime-paw-radar\/?/, '')
-        l.replace(l.origin + '/realtime-paw-radar/?path=/' + path + l.search)
+        var m = l.pathname.match(/^\/([^/]+)\//)
+        var prefix = m ? '/' + m[1] : ''
+        var path = l.pathname.substring(prefix.length) || '/'
+        l.replace(l.origin + prefix + '/?path=' + path + l.search)
       })()
     </script>
   </head>

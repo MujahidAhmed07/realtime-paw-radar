@@ -65,12 +65,7 @@ export function App() {
                   <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
                 </Route>
 
-                <Route path="*" element={
-                  <div className="container-page py-24 text-center">
-                    <h1 className="text-4xl font-bold">404</h1>
-                    <p className="mt-2 text-muted-foreground">Page not found.</p>
-                  </div>
-                } />
+                <Route path="*" element={<Navigate to="/home" replace />} />
               </Route>
             </Routes>
           </ToastProvider>
