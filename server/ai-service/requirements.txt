@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+pydantic
+# Future (enable when implementing real models):
+# torch
+# open_clip_torch
+# psycopg[binary]
