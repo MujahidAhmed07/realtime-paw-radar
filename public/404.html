@@ -4,20 +4,14 @@
     <meta charset="utf-8" />
     <title>PetAlert</title>
     <script>
-      // GitHub Pages SPA fallback. For project pages, the 404 page is served
-      // from the domain root, so the repo prefix is recovered from the
-      // document.referrer (the page that triggered the 404). Unknown paths
-      // land on the app home.
+      // GitHub Pages SPA fallback (project pages). The repo prefix is injected
+      // at build time by the inject-404-base Vite plugin (__PAGES_BASE__).
+      // Unknown paths land on the app home.
       (function () {
         var l = window.location
-        var prefix = ''
-        try {
-          var ref = document.referrer || ''
-          var rm = ref.match(/^[a-z]+:\/\/[^/]+\/([^/]+)/)
-          if (rm && rm[1] !== 'favicon.ico') prefix = '/' + rm[1]
-        } catch (e) { /* ignore */ }
-        var path = l.pathname.substring(prefix.length) || '/'
-        l.replace(l.origin + prefix + '/?path=' + path + l.search)
+        var prefix = '__PAGES_BASE__' // e.g. '/realtime-pet-finder/' or '' for root hosting
+        var path = l.pathname.substring(prefix.length ? prefix.length - 1 : 0) || '/'
+        l.replace(l.origin + prefix + '?path=' + path + l.search)
       })()
     </script>
   </head>
